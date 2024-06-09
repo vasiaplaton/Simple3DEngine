@@ -1,0 +1,111 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+@startuml
+
+
+package SolarSystem.AstronomicBodies {
+    class Sphere {
+        - spColor: Color
+        + Sphere()
+        + Sphere(double, Color)
+        + rebuildSphere(double)
+        - getColor(int, int, int): Color
+        + getCirclePoints(int, double, double, double): List<Vec3D>
+    }
+
+    class MapAstronomicBody {
+        - map: BufferedImage
+        + MapAstronomicBody(String, double, double, Vec2D, String)
+        + getColor(int, int, int): Color
+    }
+
+    class ColorAstronomicBody {
+        - color: Color
+        + ColorAstronomicBody(String, double, double, Vec2D, Color)
+        - getColor(int, int, int): Color
+    }
+
+    class AstronomicBody {
+        - radius: double
+        - mass: double
+        - name: String
+        - relParentPos: Vec2D
+        - astroInit: boolean
+        - velocity: Vec2D
+        - inclination: double
+        - parent: AstronomicBody
+        - trajectory: IModel
+        - trajectoryAngles: List<Double>
+        - trajectoryC: Color
+        - angledLenTrajectory: double
+        + AstronomicBody(String, double, double, Vec2D)
+        + initAstro(Vec2D, AstronomicBody, double, Color)
+        + update(double, double)
+        + getMass(): double
+        + getAbsolutePos(): Vec2D
+        + setAstroPos(Vec2D)
+        + addToTrajectory(Vec3D, Vec3D, double, double)
+        + getTrajectory(): IModel
+        + isAstroInit(): boolean
+        + getInclination(): double
+    }
+}
+
+Sphere --|> Graphics3d.IModel
+Sphere ..> Graphics3d.Vec3D
+AstronomicBody --|> Sphere
+AstronomicBody ..> SolarSystem.Consts
+AstronomicBody --> Graphics3d.IModel
+AstronomicBody --> Graphics2d.Vec2D
+AstronomicBody --> Graphics3d.Vec3D
+ColorAstronomicBody ---|> AstronomicBody
+ColorAstronomicBody ..> Graphics2d.Vec2D
+MapAstronomicBody --|> AstronomicBody
+MapAstronomicBody ..> Graphics2d.Vec2D
+
+
+package SolarSystem {
+    class Consts {
+        + G: double
+    }
+
+    class FarStars {
+        - color: Color
+        + FarStars(double)
+    }
+
+    class SolarSystem {
+        - camera: Camera
+        - backgroundColor: Color
+        - engine: Engine
+        - bodies: List<AstronomicBody>
+        - farStars: List<FarStars>
+        + SolarSystem()
+        + update(boolean)
+        + updateandDrawOnCanvas(Graphics2D, boolean)
+        + nextStep(double, double)
+        - generateFarStars(int)
+    }
+
+    class StandartSolarSystemGenerator {
+        - List<AstronomicBody> generateStdSystem()
+        - AstronomicBody generateSun()
+        - AstronomicBody generateEarth(AstronomicBody sun)
+        - AstronomicBody generateMoon(AstronomicBody earth)
+        - AstronomicBody generateMars(AstronomicBody sun)
+        - AstronomicBody generateAster(AstronomicBody sun)
+        - AstronomicBody generateMercury(AstronomicBody sun)
+    }
+}
+FarStars --|> Graphics3d.IModel
+SolarSystem.SolarSystem -down---> AstronomicBody
+SolarSystem.SolarSystem --> Engine.Camera
+SolarSystem.SolarSystem --> Engine.Engine
+SolarSystem.SolarSystem --> FarStars
+
+StandartSolarSystemGenerator ..> AstronomicBody
+@enduml
+
+
+@enduml

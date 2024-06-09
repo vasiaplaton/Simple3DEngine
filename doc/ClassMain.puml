@@ -1,0 +1,275 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package Main {
+    class MainForm {
+        -root: JPanel
+        -draw: JPanel
+        -canvas: DrawPanel
+        -animation: JRadioButton
+        -speedSlider: JSlider
+        -generateNewButton: JButton
+        -removeButton: JButton
+        -bodies: JComboBox<AstronomicBody>
+        -trajectoryLen: JSlider
+        -prevTime: long
+        -world: SolarSystem
+        -currentPos: Vec2<Integer>
+        -oldMousePos: Vec2<Integer>
+        -fpsCounter: FPSCounter
+        -minDelta: int
+        +Direction
+        +getVectorByDir(d: Direction, module: double): Vec3D
+        +MainForm()
+        +getMouseVector(e: MouseEvent): Vec2<Integer>
+        +update(): void
+        +updateListBodies(): void
+        +main(args: String[]): void
+        +createUIComponents(): void
+    }
+
+    class DrawPanel extends JPanel {
+            -imgDrawer: ImgDrawer
+            +setImgDrawer(imgDrawer: ImgDrawer): void
+            +paintComponent(g: Graphics): void
+            -clearImage(image: BufferedImage): void
+    }
+
+    interface ImgDrawer {
+       +drawImage(image: BufferedImage): void
+    }
+
+    MainForm --> DrawPanel
+}
+MainForm --> Graphics2D.Vec2
+
+package Math {
+    class Const {
+        {static} +EPS: double
+        {static} +PI: double
+    }
+
+    class Matrix4 {
+        {static} +zero(): Matrix4
+        {static} +identity(): Matrix4
+        +multiple(matrix: Matrix4): Matrix4
+        +multiple(vec: Vec3D): Vec3D
+        +multiple(point4D: Vec4D): Vec4D
+        {static} +scale(factor: Vec3D): Matrix4
+        {static} +translation(v: Vec3D): Matrix4
+        {static} +rotationX(rx: double): Matrix4
+        {static} +rotationY(ry: double): Matrix4
+        {static} +rotationZ(rz: double): Matrix4
+        {static} +rotation(r: Vec3D): Matrix4
+        {static} +rotation(v: Vec3D, rv: double): Matrix4
+        {static} +projection(fov: double, aspect: double, ZNear: double, ZFar: double): Matrix4
+        {static} +screenSpace(width: int, height: int): Matrix4
+        {static} +view(transformMatrix: Matrix4): Matrix4
+        +x(): Vec3D
+        +y(): Vec3D
+        +z(): Vec3D
+        +w(): Vec3D
+    }
+
+    Matrix4 ..> Const
+}
+
+
+package Graphics2D {
+    class Vec2<T extends Number> {
+        +x: T
+        +y: T
+    }
+
+    class Vec2D {
+        +x: double
+        +y: double
+        +abs(): double
+        +normalized(): Vec2D
+        +neg(): Vec2D
+        +multiple(v: double): Vec2D
+        +add(a: Vec2D): Vec2D
+        +toString(): String
+        +rotate(a: double): Vec2D
+    }
+}
+
+
+package Graphics3d {
+    class Vec3D {
+        +x: Double
+        +y: Double
+        +z: Double
+        +Vec3D(x: Double, y: Double, z: Double)
+        +Vec3D(a: Double)
+        +Vec3D(vec4D: Vec4D)
+        +makePoint4D(): Vec4D
+        +cross(vec: Vec3D): Vec3D
+        +neg(): Vec3D
+        +plus(vec: Vec3D): Vec3D
+        +sqrAbs(): double
+        +abs(): double
+        +multiple(val: double): Vec3D
+        +normalized(): Vec3D
+        +minus(vec: Vec3D): Vec3D
+        +dot(vec: Vec3D): double
+        +toString(): String
+        +rotate(rotation: Vec3D): Vec3D
+    }
+
+    Vec3D..>Vec4D
+
+    class Vec4D {
+        +x: Double
+        +y: Double
+        +z: Double
+        +w: Double
+        +Vec4D(x: Double, y: Double, z: Double, w: Double)
+        +plus(vec: Vec4D): Vec4D
+        +neg(): Vec4D
+        +minus(vec: Vec4D): Vec4D
+        +multiple(number: double): Vec4D
+        +divide(number: double): Vec4D
+    }
+
+
+    class Triangle {
+            -points: Vec4D[3]
+            +normal: Vec3D
+            +color: Color
+            +Triangle(p1: Vec4D, p2: Vec4D, p3: Vec4D, color: Color)
+            +multiple(matrix4: Matrix4): Triangle
+            +getPoint(pointNum: int): Vec4D
+            -calcNormal(): Vec3D
+        }
+
+    Triangle --> Vec3D
+    Triangle -->Vec4D
+    Triangle ..> Matrix4
+
+    class Plane {
+            -normal: Vec3D
+            -point: Vec3D
+            -point1: Vec3D
+            +Plane(normal: Vec3D, point: Vec3D)
+            +distance(point_in: Vec3D): double
+            +intersection(start: Vec3D, end: Vec3D): Intersect
+            +clip(tri: Triangle): List<Triangle>
+        }
+
+
+    Plane --> Intersect
+    Plane --> Vec3D
+    Plane ..> Triangle
+
+    class Intersect {
+        + pos: Vec3D
+        + dist: double
+    }
+
+         class Object {
+                -angle: Vec3D
+                -angleLeftUpLookAt: Vec3D
+                -position: Vec3D
+                -transformMatrix: Matrix4
+                +model(): Matrix4
+                +invModel(): Matrix4
+                +left(): Vec3D
+                +up(): Vec3D
+                +lookAt(): Vec3D
+                +position(): Vec3D
+                +angle(): Vec3D
+                +angleLeftUpLookAt(): Vec3D
+                +transform(t: Matrix4)
+                +transformRelativePoint(point: Vec3D, transform: Matrix4)
+                +translate(dv: Vec3D)
+                +scale(s: Vec3D)
+                +rotate(r: Vec3D)
+                +rotate(v: Vec3D, rv: double)
+                +rotateRelativePoint(s: Vec3D, r: Vec3D)
+                +rotateRelativePoint(s: Vec3D, v: Vec3D, r: double)
+                +rotateLeft(rl: double)
+                +rotateUp(ru: double)
+                +rotateLookAt(rlAt: double)
+                +translateToPoint(point: Vec3D)
+            }
+
+    Object --> Matrix4
+    Object --> Vec3D
+
+     class IModel extends Object{
+            -list: List<Triangle>
+            +IModel()
+            +IModel(objPath: String, color: Color) throws IOException
+            +setColor(color: Color)
+     }
+
+     IModel --> Triangle
+
+
+
+}
+
+package Engine {
+    interface Engine {
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    Engine ..> Graphics2d
+    Engine ..> IModel
+
+    class ThreadEngine {
+        -camera: Camera
+        -projected: List<Triangle>
+        -stopwatch: Stopwatch
+        -nThreads: int
+        -executorService: ExecutorService
+        +ThreadEngine(camera: Camera)
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    ThreadEngine <|..Engine
+    ThreadEngine --> Camera
+    ThreadEngine --> Stopwatch
+    ThreadEngine --> Triangle
+    ThreadEngine ..> Graphics2d
+    ThreadEngine ..> IModel
+
+    class BaseEngine {
+        -camera: Camera
+        -projected: List<Triangle>
+        -stopwatch: Stopwatch
+        +BaseEngine(camera: Camera)
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    BaseEngine <|..Engine
+     BaseEngine --> Camera
+     BaseEngine --> Stopwatch
+     BaseEngine --> Triangle
+     BaseEngine ..> Graphics2d
+      BaseEngine ..> IModel
+
+    class Camera extends Object{
+        -aspect: double
+        -SP: Matrix4
+        -clipPlanes: List<Plane>
+        +Camera(width: int, height: int, fov: double, ZNear: double, ZFar: double)
+        +project(mesh: IModel): List<Triangle>
+        +sorted(triangles: List<Triangle>)
+    }
+
+    Camera-->Matrix4
+    Camera-->Plane
+    Camera..>IModel
+    Camera..>Triangle
+}
+
+
+@enduml

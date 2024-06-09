@@ -1,0 +1,42 @@
+@startuml
+
+[*] --> Init
+
+state Init {
+  [*] --> CreatingSystem
+  CreatingSystem --> SystemReady : System created
+}
+
+state SystemReady {
+  [*] --> Idle : System initialized
+  Idle --> Rendering : User starts rendering
+  Rendering --> Idle : User stops rendering
+  Idle --> Simulation : User starts simulation
+  Simulation --> Idle : User stops simulation
+}
+
+state Rendering {
+  [*] --> Drawing : Start rendering
+  Drawing --> Drawing : Rendering frame
+  Drawing --> Paused : User pauses rendering
+  Paused --> Drawing : User resumes rendering
+  Drawing --> Stopped : User stops rendering
+}
+
+state Simulation {
+  [*] --> Running : Start simulation
+  Running --> Running : Simulating
+  Running --> Paused : User pauses simulation
+  Paused --> Running : User resumes simulation
+  Running --> Stopped : User stops simulation
+}
+
+state Stopped {
+  [*] --> Idle : System stopped
+}
+
+state Paused {
+  [*] --> Idle : System paused
+}
+
+@enduml

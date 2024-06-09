@@ -1,0 +1,82 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+left to right direction
+package Main {
+    class MainForm {
+        -root: JPanel
+        -draw: JPanel
+        -canvas: DrawPanel
+        -animation: JRadioButton
+        -speedSlider: JSlider
+        -generateNewButton: JButton
+        -removeButton: JButton
+        -bodies: JComboBox<AstronomicBody>
+        -trajectoryLen: JSlider
+        -prevTime: long
+        -world: SolarSystem
+        -currentPos: Vec2<Integer>
+        -oldMousePos: Vec2<Integer>
+        -fpsCounter: FPSCounter
+        -minDelta: int
+        +Direction
+        +getVectorByDir(d: Direction, module: double): Vec3D
+        +MainForm()
+        +getMouseVector(e: MouseEvent): Vec2<Integer>
+        +update(): void
+        +updateListBodies(): void
+        +main(args: String[]): void
+        +createUIComponents(): void
+    }
+
+    class DrawPanel {
+            -imgDrawer: ImgDrawer
+            +setImgDrawer(imgDrawer: ImgDrawer): void
+            +paintComponent(g: Graphics): void
+            -clearImage(image: BufferedImage): void
+    }
+
+    interface ImgDrawer {
+       +drawImage(image: BufferedImage): void
+    }
+    DrawPanel -up-> ImgDrawer
+
+    enum Direction {
+        FORWARD,
+        BACK,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    }
+
+    MainForm --> DrawPanel
+
+
+    MainForm --> Direction
+
+}
+
+MainForm --> SolarSystem.SolarSystem
+MainForm --> Graphics2D.Vec2
+MainForm --> SolarSystem.AstronomicBodies.AstronomicBody
+
+package SolarSystem {
+class SolarSystem {
+}
+package AstronomicBodies{
+class AstronomicBody {
+}
+}
+}
+
+MainForm -down-> Graphics2D.Vec2
+
+MainForm -down-> Time.FPSCounter
+
+MainForm -down-> Graphics2D.Vec2
+MainForm .down.> Graphics3D.Vec3D
+
+
+
+@enduml

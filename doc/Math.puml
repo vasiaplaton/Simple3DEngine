@@ -1,0 +1,40 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+package Math {
+    class Const {
+        {static} +EPS: double
+        {static} +PI: double
+    }
+
+    class Matrix4 {
+        {static} +zero(): Matrix4
+        {static} +identity(): Matrix4
+        +multiple(matrix: Matrix4): Matrix4
+        +multiple(vec: Vec3D): Vec3D
+        +multiple(point4D: Vec4D): Vec4D
+        {static} +scale(factor: Vec3D): Matrix4
+        {static} +translation(v: Vec3D): Matrix4
+        {static} +rotationX(rx: double): Matrix4
+        {static} +rotationY(ry: double): Matrix4
+        {static} +rotationZ(rz: double): Matrix4
+        {static} +rotation(r: Vec3D): Matrix4
+        {static} +rotation(v: Vec3D, rv: double): Matrix4
+        {static} +projection(fov: double, aspect: double, ZNear: double, ZFar: double): Matrix4
+        {static} +screenSpace(width: int, height: int): Matrix4
+        {static} +view(transformMatrix: Matrix4): Matrix4
+        +x(): Vec3D
+        +y(): Vec3D
+        +z(): Vec3D
+        +w(): Vec3D
+    }
+
+}
+
+ Matrix4 .up.> Graphics3d.Vec3D
+Matrix4 .up.> Graphics3d.Vec4D
+
+
+
+@enduml

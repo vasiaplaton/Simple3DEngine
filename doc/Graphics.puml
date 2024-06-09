@@ -1,0 +1,153 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+package Math {
+    class Matrix4 {
+    }
+}
+
+ Matrix4 .up.> Graphics3d.Vec3D
+Matrix4 .up.> Graphics3d.Vec4D
+
+
+package Graphics2D {
+    class Vec2<T extends Number> {
+        +x: T
+        +y: T
+    }
+
+    class Vec2D {
+        +x: double
+        +y: double
+        +abs(): double
+        +normalized(): Vec2D
+        +neg(): Vec2D
+        +multiple(v: double): Vec2D
+        +add(a: Vec2D): Vec2D
+        +toString(): String
+        +rotate(a: double): Vec2D
+    }
+}
+
+
+package Graphics3d {
+    class Vec3D {
+        +x: Double
+        +y: Double
+        +z: Double
+        +Vec3D(x: Double, y: Double, z: Double)
+        +Vec3D(a: Double)
+        +Vec3D(vec4D: Vec4D)
+        +makePoint4D(): Vec4D
+        +cross(vec: Vec3D): Vec3D
+        +neg(): Vec3D
+        +plus(vec: Vec3D): Vec3D
+        +sqrAbs(): double
+        +abs(): double
+        +multiple(val: double): Vec3D
+        +normalized(): Vec3D
+        +minus(vec: Vec3D): Vec3D
+        +dot(vec: Vec3D): double
+        +toString(): String
+        +rotate(rotation: Vec3D): Vec3D
+    }
+
+    Vec3D..>Vec4D
+
+    class Vec4D {
+        +x: Double
+        +y: Double
+        +z: Double
+        +w: Double
+        +Vec4D(x: Double, y: Double, z: Double, w: Double)
+        +plus(vec: Vec4D): Vec4D
+        +neg(): Vec4D
+        +minus(vec: Vec4D): Vec4D
+        +multiple(number: double): Vec4D
+        +divide(number: double): Vec4D
+    }
+
+
+    class Triangle {
+            -points: Vec4D[3]
+            +normal: Vec3D
+            +color: Color
+            +Triangle(p1: Vec4D, p2: Vec4D, p3: Vec4D, color: Color)
+            +multiple(matrix4: Matrix4): Triangle
+            +getPoint(pointNum: int): Vec4D
+            -calcNormal(): Vec3D
+        }
+
+    Triangle --> Vec3D
+    Triangle -->Vec4D
+    Triangle ..> Matrix4
+
+    class Plane {
+            -normal: Vec3D
+            -point: Vec3D
+            -point1: Vec3D
+            +Plane(normal: Vec3D, point: Vec3D)
+            +distance(point_in: Vec3D): double
+            +intersection(start: Vec3D, end: Vec3D): Intersect
+            +clip(tri: Triangle): List<Triangle>
+        }
+
+
+    Plane --> Intersect
+    Plane --> Vec3D
+    Plane ..> Triangle
+
+    class Intersect {
+        + pos: Vec3D
+        + dist: double
+    }
+
+    Intersect --> Vec3D
+
+
+         class Object {
+                -angle: Vec3D
+                -angleLeftUpLookAt: Vec3D
+                -position: Vec3D
+                -transformMatrix: Matrix4
+                +model(): Matrix4
+                +invModel(): Matrix4
+                +left(): Vec3D
+                +up(): Vec3D
+                +lookAt(): Vec3D
+                +position(): Vec3D
+                +angle(): Vec3D
+                +angleLeftUpLookAt(): Vec3D
+                +transform(t: Matrix4)
+                +transformRelativePoint(point: Vec3D, transform: Matrix4)
+                +translate(dv: Vec3D)
+                +scale(s: Vec3D)
+                +rotate(r: Vec3D)
+                +rotate(v: Vec3D, rv: double)
+                +rotateRelativePoint(s: Vec3D, r: Vec3D)
+                +rotateRelativePoint(s: Vec3D, v: Vec3D, r: double)
+                +rotateLeft(rl: double)
+                +rotateUp(ru: double)
+                +rotateLookAt(rlAt: double)
+                +translateToPoint(point: Vec3D)
+            }
+
+    Object --> Matrix4
+    Object --> Vec3D
+
+     class IModel extends Object{
+            -list: List<Triangle>
+            +IModel()
+            +IModel(objPath: String, color: Color) throws IOException
+            +setColor(color: Color)
+     }
+
+     IModel --> Triangle
+
+
+
+}
+
+
+@enduml

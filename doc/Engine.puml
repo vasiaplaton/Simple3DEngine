@@ -1,0 +1,84 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package Time {
+    class FPSCounter {
+        -frames: int
+        -lastMilliseconds: long
+        -fps: int
+        +FPSCounter()
+        +tick()
+        +getFPS(): int
+    }
+    class Stopwatch {
+        -time: long
+        +start()
+        +stop(): long
+    }
+}
+
+package Engine {
+    interface Engine {
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    class ThreadEngine {
+        -camera: Camera
+        -projected: List<Triangle>
+        -stopwatch: Stopwatch
+        -nThreads: int
+        -executorService: ExecutorService
+        +ThreadEngine(camera: Camera)
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    ThreadEngine ..|> Engine
+    ThreadEngine --> Camera
+
+    class BaseEngine {
+        -camera: Camera
+        -projected: List<Triangle>
+        -stopwatch: Stopwatch
+        +BaseEngine(camera: Camera)
+        +update(models: List<IModel>)
+        +getTrianglesAmount(): int
+        +drawOnCanvas(imageGraphics: Graphics2D)
+    }
+
+    BaseEngine ..|> Engine
+     BaseEngine --> Camera
+
+
+    class Camera{
+        -aspect: double
+        -SP: Matrix4
+        -clipPlanes: List<Plane>
+        +Camera(width: int, height: int, fov: double,\n ZNear: double, ZFar: double)
+        +project(mesh: IModel): List<Triangle>
+        +sorted(triangles: List<Triangle>)
+    }
+
+}
+
+ThreadEngine -up-> Time.Stopwatch
+BaseEngine -left-> Time.Stopwatch
+Engine.Engine ..> Graphics3d.IModel
+
+ThreadEngine --> Graphics3d.Triangle
+BaseEngine --> Graphics3d.Triangle
+
+ThreadEngine ..> Graphics3d.IModel
+BaseEngine ..> Graphics3d.IModel
+
+
+Camera-->Math.Matrix4
+Camera------>Graphics3d.Plane
+Camera..>Graphics3d.IModel
+Camera..>Graphics3d.Triangle
+Camera--|>Graphics3d.Object
+
+@enduml
