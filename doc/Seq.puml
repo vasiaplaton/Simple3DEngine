@@ -1,42 +1,58 @@
 @startuml
 
-[*] --> Init
+actor User
+participant DrawPanel
+participant SolarSystem
 
-state Init {
-  [*] --> CreatingSystem
-  CreatingSystem --> SystemReady : System created
-}
+participant Engine
+participant Camera
+User -> DrawPanel: запуск
+activate DrawPanel
+DrawPanel -> SolarSystem: инициализация
+activate SolarSystem
+SolarSystem -> SolarSystem: создание \nвсех планет
 
-state SystemReady {
-  [*] --> Idle : System initialized
-  Idle --> Rendering : User starts rendering
-  Rendering --> Idle : User stops rendering
-  Idle --> Simulation : User starts simulation
-  Simulation --> Idle : User stops simulation
-}
+loop Цикл отрисовки
+DrawPanel -> SolarSystem: следующий шаг физики
+loop Для всех тел
+SolarSystem -> SolarSystem: обновление вектора поворота и \nпозиции тела
+end
 
-state Rendering {
-  [*] --> Drawing : Start rendering
-  Drawing --> Drawing : Rendering frame
-  Drawing --> Paused : User pauses rendering
-  Paused --> Drawing : User resumes rendering
-  Drawing --> Stopped : User stops rendering
-}
+DrawPanel -> SolarSystem: запрос новой картинки
+SolarSystem -> Engine: запрос на обновление\n[список всех моделей]
+activate Engine
+loop Для всех моделей
+Engine -> Camera: запрос на создание проекций\n[список всех моделей]
+activate Camera
+loop Для каждого полигона модели
 
-state Simulation {
-  [*] --> Running : Start simulation
-  Running --> Running : Simulating
-  Running --> Paused : User pauses simulation
-  Paused --> Running : User resumes simulation
-  Running --> Stopped : User stops simulation
-}
+Camera -> Camera: умножение полигона \n на матрицу трансформации \n модели
+Camera -> Camera: вычисление нормали\n полигона
+Camera -> Camera: проекция полига на \nплоскость экрана
+Camera -> Camera: клиппинг полигонов
+Camera -> Camera: вычисление затемнения\n исходя из нормали
+Camera -> Camera: обновление цвета
+end
+Camera --> Engine: список полигонов
+end
+Engine -> Camera: запрос на сортировку\n всех полигонов
+Camera -> Camera: сортировка по глубине\n (удаленность от камеры)
+Camera --> Engine: отсортированные \nспроецированные полигоны
+Engine -> Engine: сохранение новых \nспроцированных полигонов
+SolarSystem -> Engine: запрос отрисовки кадра
+loop Для всех спроецированных полигонов
+Engine -> Engine: отрисовка полигона \n на Buffered image
+end
+Engine --> SolarSystem: новый кадр
 
-state Stopped {
-  [*] --> Idle : System stopped
-}
+deactivate Engine
+SolarSystem --> DrawPanel: новый кадр
+DrawPanel --> User: новый кадр
+end
+User -> DrawPanel: ввод клавиаутры
+DrawPanel -> Camera: вектор перемещения/поворота
+Camera -> Camera: обновление собственной nпозиции
+Camera -> Camera: обновление матрицы поворота
 
-state Paused {
-  [*] --> Idle : System paused
-}
 
 @enduml
